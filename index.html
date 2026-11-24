@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DriftLab: E×B drift in 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{--bg:#f2f4fb;--fg:#10152e;--mut:#56608a;--cd:#fff;--ln:#d6dcf0;--a:#0b8c9b;--b:#c4177a;--y:#b87400;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#060919;--fg:#e9eeff;--mut:#9ba7d3;--cd:#0f1538;--ln:#262e66;--a:#35e2f5;--b:#ff55a8;--y:#ffc93c}}
+:root[data-theme="dark"]{--bg:#060919;--fg:#e9eeff;--mut:#9ba7d3;--cd:#0f1538;--ln:#262e66;--a:#35e2f5;--b:#ff55a8;--y:#ffc93c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.55 'Space Grotesk',system-ui,sans-serif}
+header,body::before{background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid var(--ln)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10}
+.lo{font-weight:700;font-size:19px;letter-spacing:-.4px}.lo i{color:var(--a);font-style:normal}
+nav{display:flex;gap:7px;padding-bottom:5px}
+main{max-width:1040px;margin:0 auto;padding:18px 14px 70px}
+[hidden]{display:none!important}
+section:not([hidden]){animation:in .45s both}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}
+h1{font-size:clamp(36px,9vw,68px);line-height:1;margin:6px 0 14px;letter-spacing:-2px}
+h1 span{display:block;margin-top:8px;font-size:.45em;letter-spacing:-.5px;line-height:1.15;background:linear-gradient(90deg,var(--a),var(--b),var(--y),var(--a));background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 8s linear infinite}
+@keyframes sh{to{background-position:300%}}
+h2{font-size:30px;margin:6px 0 12px;letter-spacing:-.6px}h3{margin:0 0 6px;font-size:20px;letter-spacing:-.3px}
+p{color:var(--mut);margin:.3em 0 1em;max-width:62ch}
+.row{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}
+.btn{--c1:#4ee8f8;--c2:#0aa1b6;--c3:#066273;font:700 15px 'Space Grotesk',system-ui,sans-serif;color:#04222a;text-decoration:none;border:0;cursor:pointer;padding:13px 20px;border-radius:14px;background:linear-gradient(var(--c1),var(--c2));box-shadow:0 6px 0 var(--c3),0 12px 20px rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.55);transition:transform .1s,box-shadow .1s;transform:translateY(-2px);user-select:none;display:inline-block}
+.btn:hover{transform:translateY(-4px)}
+.btn:active,.btn.on{transform:translateY(4px)!important;box-shadow:0 2px 0 var(--c3),0 4px 8px rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.4)!important}
+.btn:focus-visible{outline:3px solid var(--y);outline-offset:3px}
+.m{--c1:#ff8cc8;--c2:#e0207f;--c3:#82104a;color:#fff}.y{--c1:#ffe07a;--c2:#f2a400;--c3:#8f5d00;color:#2b1a00}
+.ok{--c1:#7dffb0;--c2:#18c46a;--c3:#0b6b3b;color:#032}.no{--c1:#ff9a9a;--c2:#e03a3a;--c3:#7d1313;color:#fff}
+.nb{padding:8px 12px;font-size:13px;border-radius:11px}
+.stage{position:relative;height:58vh;min-height:320px;max-height:640px;border-radius:24px;overflow:hidden;background:radial-gradient(110% 80% at 50% 0%,#222c7a,#090d2b 60%,#04061a);border:1px solid var(--ln);box-shadow:0 24px 60px rgba(30,40,140,.35)}
+.stage canvas{width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+.lg{position:absolute;left:12px;right:12px;bottom:9px;display:flex;flex-wrap:wrap;gap:3px 12px;font:700 11px 'Space Grotesk',sans-serif;color:#cfd8ff;pointer-events:none}
+.cd{background:var(--cd);border:1px solid var(--ln);border-radius:20px;padding:18px;margin:16px 0;transition:transform .15s;box-shadow:0 14px 34px rgba(10,20,80,.18)}
+a.cd{color:inherit;text-decoration:none;display:block}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px}.g3 .cd{margin:0}
+.fm{font-weight:700;font-size:clamp(28px,7vw,48px);line-height:1.2;text-align:center;padding:26px 12px}
+.fm small{display:block;font:500 14px 'Space Grotesk',sans-serif;color:var(--mut);margin-top:8px}
+label{display:grid;grid-template-columns:104px 1fr 40px;align-items:center;gap:10px;margin:8px 0;font-size:14px}
+label b{text-align:right}input[type=range]{width:100%;accent-color:var(--b)}
+.ro{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.ro div{background:rgba(120,140,255,.12);border-radius:12px;padding:8px 10px;font-size:12px;color:var(--mut)}
+.ro b{display:block;font-size:22px;color:var(--fg)}
+.q .btn{display:block;width:100%;text-align:left;margin:12px 0 16px}
+@media(prefers-reduced-motion:reduce){h1 span,section{animation:none!important}}
+</style></head><body>
+<header><div class="lo">⚡Drift<i>Lab</i></div><nav id="nv"></nav></header>
+<main>
+<section id="home">
+<h1>Drift velocity<span>of a +ve charge in electric and magnetic fields</span></h1>
+<p>Watch a charge slide sideways through crossed fields, in real 3D. Drag the scene to spin it.</p>
+<div class="row"><a class="btn" href="#learn">Start learning</a><a class="btn m" href="#lab">Open the 3D Lab</a></div>
+<div class="stage"><canvas id="c0"></canvas></div>
+<div class="cd fm tilt">v<sub>d</sub> = E / B<small>Direction: E × B. The same for every mass and every charge.</small></div>
+<div class="g3">
+<a class="cd tilt" href="#learn"><h3>Learn in 4 steps</h3><p>From a lone electric field to the cycloid and the drift formula.</p></a>
+<a class="cd tilt" href="#lab"><h3>Play in the 3D Lab</h3><p>Change E, B and launch speed. Spin, flip and slow down the view.</p></a>
+<a class="cd tilt" href="#quiz"><h3>Test yourself</h3><p>Four quick questions with instant feedback.</p></a></div>
+</section>
+<section id="learn" hidden>
+<h2>Learn in 4 steps</h2><div class="row" id="sb"></div>
+<div class="stage"><canvas id="c1"></canvas></div>
+<div class="cd"><h3 id="lt"></h3><p id="lp"></p><div class="fm" style="padding:6px" id="lf"></div>
+<p>Theory E/B = <b id="a1"></b> · Measured average speed along x = <b id="a2"></b></p><div class="row" id="lb"></div></div>
+</section>
+<section id="lab" hidden>
+<h2>3D Lab</h2><div class="stage"><canvas id="c2"></canvas></div>
+<div class="cd"><div class="ro"><div>Theory v<sub>d</sub> = E/B<b id="r0"></b></div><div>Measured avg speed along x<b id="r1"></b></div><div>Circle radius r<b id="r2"></b></div><div>Period T<b id="r3"></b></div></div>
+<div id="sl"></div><div class="row" id="pr"></div><div class="row" id="ct"></div>
+<p>Units: q = m = 1, so the numbers show the shapes. In real life v<sub>d</sub> = E/B in m/s, with E in V/m and B in tesla.</p></div>
+</section>
+<section id="quiz" hidden><h2>Quick quiz</h2><div class="cd q" id="qz"></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),f=x=>isFinite(x)?x.toFixed(2):'—';
+const LEG='<div class="lg"><span style="color:#5eeaff">↑ E field</span><span style="color:#ff6fb5">⊙ B field</span><span style="color:#ffd04d">v velocity</span><span style="color:#6dffa6">v<sub>d</sub> drift</span><span style="margin-left:auto;opacity:.7">drag to spin</span></div>';
+document.querySelectorAll('.stage').forEach(s=>s.insertAdjacentHTML('beforeend',LEG));
+const mk=(par,txt,fn,cls='')=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=()=>fn(b);par.append(b);return b};
+const ALL=[];
+function Scene(cv,o){
+const g=cv.getContext('2d'),S={E:1,B:1,v:0,vz:0,yaw:-.7,pitch:.42,ty:-.7,tp:.42,zm:1,run:1,vec:1,auto:0,sp:1,tr:[],cv,...o},
+st=[...Array(60)].map(()=>[Math.random(),Math.random(),Math.random()]);
+let W,H,p,v,t,cam,gc,dr=0,lx=0,ly=0;
+const rs=()=>{const d=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;g.setTransform(d,0,0,d,0,0)},
+G=()=>{const{E,B}=S;return B<.05?[...p]:[p[0]+v[1]/B,p[1]-(v[0]-E/B)/B,p[2]]},
+Rt=(x,y,z)=>{let c=Math.cos(S.yaw),s=Math.sin(S.yaw);const X=x*c+z*s,Z=-x*s+z*c;c=Math.cos(S.pitch);s=Math.sin(S.pitch);return[X,y*c-Z*s,y*s+Z*c]},
+P=(x,y,z)=>{const[X,Y,Z]=Rt(x-cam[0],y-cam[1],z-cam[2]),k=Math.min(W,H)/12*S.zm*14/(14-Z);return[W/2+X*k,H/2-Y*k,k]},
+adv=h=>{const{E,B}=S;if(B<.05){v[1]+=E*h;for(let i=0;i<3;i++)p[i]+=v[i]*h}else{const d=E/B,ux=v[0]-d,uy=v[1],c=Math.cos(B*h),s=Math.sin(B*h),nx=ux*c+uy*s,ny=-ux*s+uy*c;p[0]+=d*h-(ny-uy)/B;p[1]+=(nx-ux)/B;p[2]+=v[2]*h;v[0]=nx+d;v[1]=ny}t+=h},
+A=(a,b,c,w,l)=>{const[x,y]=P(...a),[X,Y]=P(...b);if(Math.hypot(X-x,Y-y)<4)return;const n=Math.atan2(Y-y,X-x),h=7+w*2;g.strokeStyle=g.fillStyle=c;g.lineWidth=w;g.beginPath();g.moveTo(x,y);g.lineTo(X,Y);g.stroke();g.beginPath();g.moveTo(X,Y);g.lineTo(X-h*Math.cos(n-.45),Y-h*Math.sin(n-.45));g.lineTo(X-h*Math.cos(n+.45),Y-h*Math.sin(n+.45));g.fill();if(l){g.font='700 12px Space Grotesk,sans-serif';g.fillText(l,X+6,Y-6)}};
+S.reset=()=>{p=[0,0,0];v=[S.v,0,S.vz];t=0;S.tr=[];cam=G();gc=cam};
+S.view=(y,q)=>{S.ty=y+Math.round((S.yaw-y)/6.2832)*6.2832;S.tp=q;S.auto=0};
+S.stat=()=>{const B=S.B,d=B<.05;return{vd:d?NaN:S.E/B,av:t?p[0]/t:0,r:d?NaN:Math.hypot(v[0]-S.E/B,v[1])/B,T:d?NaN:6.2832/B}};
+S.step=()=>{
+if(cv.clientWidth!=W||cv.clientHeight!=H)rs();
+if(S.run){for(let i=0;i<4;i++)adv(S.sp/240);S.tr.push([...p]);if(S.tr.length>900)S.tr.shift()}
+gc=G();for(let i=0;i<3;i++)cam[i]+=(gc[i]-cam[i])*.1;
+const B=S.B,E=S.E,ext=B<.05?0:Math.hypot(v[0]-E/B,v[1])/B;
+S.zm+=(Math.max(.3,Math.min(1.3,4.2/(ext+.01)))-S.zm)*.05;
+if(S.auto&&!dr)S.ty+=.006;
+S.yaw+=(S.ty-S.yaw)*.1;S.pitch+=(S.tp-S.pitch)*.1;
+g.clearRect(0,0,W,H);
+g.fillStyle='rgba(200,220,255,.6)';st.forEach(s=>g.fillRect(((s[0]*W+S.yaw*50*s[2]-cam[0]*6*s[2])%W+W)%W,s[1]*H,s[2]*1.8,s[2]*1.8));
+g.lineWidth=1;g.strokeStyle='rgba(120,150,255,.14)';
+const gx=Math.floor(cam[0]),gy=Math.floor(cam[1]);
+for(let i=-10;i<=10;i++){let a=P(gx+i,gy-8,0),b=P(gx+i,gy+8,0);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();a=P(gx-10,gy+i*.8,0);b=P(gx+10,gy+i*.8,0);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke()}
+const Lx=Math.round(cam[0]/3);
+if(E>.02)for(let i=-3;i<=3;i++)for(const z of[-3,3]){const x=(Lx+i)*3,L=.8+E*1.2;A([x,cam[1]-L,z],[x,cam[1]+L,z],'rgba(70,225,250,.42)',1.6)}
+if(B>.05)for(let i=-3;i<=3;i++)for(let j=-1;j<=1;j++){const x=(Lx+i)*3,y=cam[1]+j*3,L=1.2+B*.6;A([x,y,cam[2]-L],[x,y,cam[2]+L],'rgba(255,100,175,.4)',1.6)}
+const T=S.tr,n=T.length;g.globalCompositeOperation='lighter';g.lineCap='round';g.lineJoin='round';
+for(let i=0;i<n-1;i+=10){const a=i/n;g.strokeStyle=`hsla(${190+a*150},100%,62%,${.06+a*.94})`;g.lineWidth=1+a*3.5;g.beginPath();let q=P(...T[i]);g.moveTo(q[0],q[1]);for(let j=i+1;j<=Math.min(i+10,n-1);j++){q=P(...T[j]);g.lineTo(q[0],q[1])}g.stroke()}
+g.globalCompositeOperation='source-over';
+if(B>.05){const[x,y,k]=P(...gc);g.strokeStyle='#6dffa6';g.lineWidth=2;g.beginPath();g.arc(x,y,.15*k,0,7);g.stroke();if(E>.02)A(gc,[gc[0]+E/B*.9,gc[1],gc[2]],'#6dffa6',3.5,'v_d')}
+{const[x,y,k]=P(...p),r=.26*k,q=g.createRadialGradient(x-r*.3,y-r*.3,r*.1,x,y,r*2.6);q.addColorStop(0,'#fff');q.addColorStop(.18,'#ffe27a');q.addColorStop(.38,'rgba(255,110,60,.55)');q.addColorStop(1,'rgba(255,60,40,0)');g.fillStyle=q;g.beginPath();g.arc(x,y,r*2.6,0,7);g.fill();g.fillStyle='#5a1500';g.font=`700 ${r*1.4}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('+',x,y+r*.05);g.textAlign='left';g.textBaseline='alphabetic'}
+if(S.vec){const[x,y,z]=p;A(p,[x+v[0]*.7,y+v[1]*.7,z+v[2]*.7],'#ffd04d',3,'v');if(E>.02)A(p,[x,y+E*.9,z],'#5eeaff',3,'qE');if(B>.05)A(p,[x+v[1]*B*.9,y-v[0]*B*.9,z],'#ff6fb5',3,'qv×B')}
+const O=[W-64,52];g.font='700 11px Space Grotesk,sans-serif';g.lineWidth=2;
+[['x','#6dffa6',[1,0,0]],['y (E)','#5eeaff',[0,1,0]],['z (B)','#ff6fb5',[0,0,1]]].forEach(([nm,c,d])=>{const[X,Y]=Rt(...d);g.strokeStyle=g.fillStyle=c;g.beginPath();g.moveTo(...O);g.lineTo(O[0]+X*28,O[1]-Y*28);g.stroke();g.fillText(nm,O[0]+X*34-(X<-.3?18:0),O[1]-Y*34+4)})};
+cv.onpointerdown=e=>{dr=1;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)};
+cv.onpointermove=e=>{if(!dr)return;S.ty+=(e.clientX-lx)*.01;S.tp=Math.max(-1.5,Math.min(1.5,S.tp+(e.clientY-ly)*.01));lx=e.clientX;ly=e.clientY};
+cv.onpointerup=cv.onpointercancel=()=>dr=0;
+S.reset();ALL.push(S);return S}
+const VB=(par,s)=>[['3D',-.7,.42],['Front',0,0],['Top',0,1.5],['Side',1.5708,0]].forEach(([n,y,q])=>mk(par,'◧ '+n,()=>s.view(y,q)));
+// pages
+const PG=['home','learn','lab','quiz'],NM=['Home','Learn','Lab','Quiz'];
+$('#nv').innerHTML=PG.map((p,i)=>`<a class="btn nb ${['','m','y',''][i]}" href="#${p}">${NM[i]}</a>`).join('');
+function go(){let h=location.hash.slice(1);if(!PG.includes(h))h='home';PG.forEach(p=>$('#'+p).hidden=p!=h);[...$('#nv').children].forEach((a,i)=>a.classList.toggle('on',PG[i]==h));scrollTo(0,0)}
+addEventListener('hashchange',go);
+// scenes
+Scene($('#c0'),{auto:1,vec:0});
+const L1=Scene($('#c1'),{ty:-.5,tp:.35}),L2=Scene($('#c2'),{});
+// learn
+const ST=[['1 E only','1 · Only an electric field',{E:1,B:0,v:0,vz:0},'The electric force on a +ve charge is F = qE, along E. The charge simply accelerates in a straight line (a = qE/m). There is no drift yet: the speed keeps growing.','F = qE'],
+['2 B only','2 · Only a magnetic field',{E:0,B:1,v:1.6,vz:0},'The magnetic force F = qv×B is always at right angles to v, so it turns the charge but never speeds it up. The result is a circle with r = mv/(qB) and period T = 2πm/(qB).','F = q v × B'],
+['3 E + B','3 · Both fields: a cycloid',{E:1,B:1,v:0,vz:0},'E pushes the charge up, then B bends it round and back down. Repeat. The path is a cycloid, like a dot on a rolling wheel: circular motion plus a steady slide sideways.','F = q ( E + v × B )'],
+['4 Drift','4 · The drift velocity',{E:1.5,B:1,v:0,vz:0},'The centre of the circle (green ring) moves at a constant drift velocity v<sub>d</sub> = E × B / B², so its speed is E/B. Mass and charge cancel out. The measured average below settles on E/B. Launch at exactly E/B in the Lab to get a straight line.','v<sub>d</sub> = E / B']];
+const sbs=ST.map((s,i)=>mk($('#sb'),s[0],()=>step(i),['','m','y','m'][i]));
+function step(i){const[,t,c,x,fm]=ST[i];Object.assign(L1,c);L1.reset();$('#lt').textContent=t;$('#lp').innerHTML=x;$('#lf').innerHTML=fm;sbs.forEach((b,j)=>b.classList.toggle('on',j==i))}
+mk($('#lb'),'↻ Replay',()=>L1.reset(),'y');VB($('#lb'),L1);step(0);
+// lab
+const SL=[['E','E field',0,2],['B','B field',.4,3],['v','Launch speed (→x)',0,3],['vz','Speed along B',0,2]],inp={};
+SL.forEach(([k,n,lo,hi])=>{const l=document.createElement('label');l.innerHTML=`${n}<input type="range" min="${lo}" max="${hi}" step="0.05" value="${L2[k]}"><b>${f(L2[k])}</b>`;const i=l.children[0],b=l.children[1];inp[k]=[i,b];i.oninput=()=>{L2[k]=+i.value;b.textContent=f(+i.value);L2.reset()};$('#sl').append(l)});
+[['Cycloid',{E:1,B:1,v:0,vz:0}],['Circle',{E:0,B:1,v:1.5,vz:0}],['Straight line',{E:1,B:1,v:1,vz:0}],['Corkscrew',{E:.6,B:1.2,v:0,vz:.9}]].forEach(([n,c],i)=>mk($('#pr'),n,()=>{Object.assign(L2,c);for(const k in c){inp[k][0].value=c[k];inp[k][1].textContent=f(c[k])}L2.reset()},['','m','y','m'][i]));
+const ct=$('#ct');
+mk(ct,'⏸ Pause',b=>{L2.run=!L2.run;b.innerHTML=L2.run?'⏸ Pause':'▶ Play'},'y');
+mk(ct,'↻ Reset',()=>L2.reset());VB(ct,L2);
+mk(ct,'Vectors',b=>{L2.vec=!L2.vec;b.classList.toggle('on',!!L2.vec)},'m on');
+mk(ct,'⟳ Auto-spin',b=>{L2.auto=!L2.auto;b.classList.toggle('on',!!L2.auto)});
+mk(ct,'⏱ 1×',b=>{const s=[.25,.5,1,2],i=(s.indexOf(L2.sp)+1)%4;L2.sp=s[i];b.innerHTML='⏱ '+s[i]+'×'});
+function ro(){const a=L1.stat(),b=L2.stat();$('#a1').textContent=f(a.vd);$('#a2').textContent=f(a.av);$('#r0').textContent=f(b.vd);$('#r1').textContent=f(b.av);$('#r2').textContent=f(b.r);$('#r3').textContent=f(b.T)}
+// quiz
+const Q=[['E = 200 V/m and B = 0.5 T cross at right angles. How fast does a +ve charge drift?',['100 m/s','400 m/s','1000 m/s'],1,'v<sub>d</sub> = E/B = 200 / 0.5 = 400 m/s.'],
+['Does the drift speed depend on the particle’s mass?',['Yes, heavier means slower','No, it is E/B for every particle','Only when B is small'],1,'Mass and charge cancel out, so every charged particle drifts at E/B.'],
+['E points up (+y) and B points out of the screen (+z). Which way does a +ve charge drift?',['Right (+x)','Left (−x)','Up (+y)'],0,'E × B = y × z = +x, so the drift is to the right.'],
+['A +ve charge is launched at exactly v = E/B, at right angles to both fields. Its path is…',['A circle','A cycloid','A straight line'],2,'The forces qE and qvB cancel, so the net force is zero.']];
+let qi=0,sc=0;
+function rq(){const q=$('#qz');q.innerHTML='';
+if(qi>=Q.length){q.innerHTML=`<h3>Score: ${sc} / ${Q.length} ${sc==Q.length?'🏆':'💪'}</h3><p>${sc==Q.length?'Perfect. You own the E×B drift.':'Revisit the Learn steps and try again.'}</p>`;mk(q,'↻ Try again',()=>{qi=sc=0;rq()},'y');return}
+const[t,o,a,e]=Q[qi];let d=0;q.innerHTML=`<p>Question ${qi+1} of ${Q.length} · score ${sc}</p><h3>${t}</h3>`;
+const bs=o.map((x,i)=>mk(q,x,b=>{if(d)return;d=1;if(i==a)sc++;b.classList.add(i==a?'ok':'no');bs[a].classList.add('ok');fb.innerHTML=(i==a?'Correct. ':'Not quite. ')+e;nx.hidden=0}));
+const fb=document.createElement('p');q.append(fb);
+const nx=mk(q,qi<Q.length-1?'Next question':'See score',()=>{qi++;rq()},'y');nx.hidden=1}
+rq();
+document.querySelectorAll('.tilt').forEach(e=>{e.onpointermove=ev=>{const r=e.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width-.5,y=(ev.clientY-r.top)/r.height-.5;e.style.transform=`perspective(800px) rotateY(${x*12}deg) rotateX(${-y*12}deg) translateZ(10px)`};e.onpointerleave=()=>e.style.transform=''});
+go();let fr=0;
+(function L(){fr++;ALL.forEach(s=>s.cv.offsetParent&&s.step());fr%6||ro();requestAnimationFrame(L)})();
+</script></body></html>
